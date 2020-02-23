@@ -2,11 +2,13 @@ import gym
 from gym import spaces
 from gym.envs.registration import EnvSpec
 import numpy as np
-from multiagent.multi_discrete import MultiDiscrete
+from gym.spaces import MultiDiscrete
 
-# environment for all agents in the multiagent world
-# currently code assumes that no agents will be created/destroyed at runtime!
+
 class MultiAgentEnv(gym.Env):
+    """Environment for all agents in the multiagent world.
+    currently code assumes that no agents will be created/destroyed at runtime!
+    """
     metadata = {
         'render.modes' : ['human', 'rgb_array']
     }
@@ -78,6 +80,8 @@ class MultiAgentEnv(gym.Env):
         self._reset_render()
 
     def step(self, action_n):
+        """Make a step for every movable agent.
+        """
         obs_n = []
         reward_n = []
         done_n = []
@@ -104,6 +108,8 @@ class MultiAgentEnv(gym.Env):
         return obs_n, reward_n, done_n, info_n
 
     def reset(self):
+        """Reset environment and agents.
+        """
         # reset world
         self.reset_callback(self.world)
         # reset renderer
@@ -115,33 +121,38 @@ class MultiAgentEnv(gym.Env):
             obs_n.append(self._get_obs(agent))
         return obs_n
 
-    # get info used for benchmarking
     def _get_info(self, agent):
+        """Get info used for benchmarking.
+        """
         if self.info_callback is None:
             return {}
         return self.info_callback(agent, self.world)
 
-    # get observation for a particular agent
     def _get_obs(self, agent):
+        """Get observation for a particular agent.
+        """
         if self.observation_callback is None:
             return np.zeros(0)
         return self.observation_callback(agent, self.world)
 
-    # get dones for a particular agent
-    # unused right now -- agents are allowed to go beyond the viewing screen
     def _get_done(self, agent):
+        """Get dones for a particular agent.
+        TODO: Unused right now -- agents are allowed to go beyond the viewing screen.
+        """
         if self.done_callback is None:
             return False
         return self.done_callback(agent, self.world)
 
-    # get reward for a particular agent
     def _get_reward(self, agent):
+        """Get reward for a particular agent.
+        """
         if self.reward_callback is None:
             return 0.0
         return self.reward_callback(agent, self.world)
 
-    # set env action for a particular agent
     def _set_action(self, action, agent, action_space, time=None):
+        """Set env action for a particular agent.
+        """
         agent.action.u = np.zeros(self.world.dim_p)
         agent.action.c = np.zeros(self.world.dim_c)
         # process action
@@ -262,8 +273,9 @@ class MultiAgentEnv(gym.Env):
 
         return results
 
-    # create receptor field locations in local coordinate frame
     def _make_receptor_locations(self, agent):
+        """Create receptor field locations in local coordinate frame.
+        """
         receptor_type = 'polar'
         range_min = 0.05 * 2.0
         range_max = 1.00
@@ -283,9 +295,10 @@ class MultiAgentEnv(gym.Env):
         return dx
 
 
-# vectorized wrapper for a batch of multi-agent environments
-# assumes all environments have the same observation and action space
 class BatchMultiAgentEnv(gym.Env):
+    """Vectorized wrapper for a batch of multi-agent environments.
+    assumes all environments have the same observation and action space
+    """
     metadata = {
         'runtime.vectorized': True,
         'render.modes' : ['human', 'rgb_array']

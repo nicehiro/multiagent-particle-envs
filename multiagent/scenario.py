@@ -1,10 +1,15 @@
 import numpy as np
 
-# defines scenario upon which the world is built
 class BaseScenario(object):
-    # create elements of the world
+    """Defines scenario upon which the world is build.
+    """
+
     def make_world(self):
+        """Create elements of the world.
+        """
         raise NotImplementedError()
-    # create initial conditions of the world
+
     def reset_world(self, world):
+        """Create initial conditions of the world.
+        """
         raise NotImplementedError()

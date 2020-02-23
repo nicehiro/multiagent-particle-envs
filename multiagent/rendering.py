@@ -11,18 +11,10 @@ if "Apple" in sys.version:
         os.environ['DYLD_FALLBACK_LIBRARY_PATH'] += ':/usr/lib'
         # (JDS 2016/04/15): avoid bug on Anaconda 2.3.0 / Yosemite
 
-from gym.utils import reraise
 from gym import error
 
-try:
-    import pyglet
-except ImportError as e:
-    reraise(suffix="HINT: you can install pyglet directly via 'pip install pyglet'. But if you really just want to install all Gym dependencies and not have to think about it, 'pip install -e .[all]' or 'pip install gym[all]' will do it.")
-
-try:
-    from pyglet.gl import *
-except ImportError as e:
-    reraise(prefix="Error occured while running `from pyglet.gl import *`",suffix="HINT: make sure you have OpenGL install. On Ubuntu, you can run 'apt-get install python-opengl'. If you're running on a server, you may need a virtual frame buffer; something like this should work: 'xvfb-run -s \"-screen 0 1400x900x24\" python <your_script.py>'")
+import pyglet
+from pyglet.gl import *
 
 import math
 import numpy as np
@@ -334,7 +326,6 @@ class SimpleImageViewer(object):
         image = pyglet.image.ImageData(self.width, self.height, 'RGB', arr.tobytes(), pitch=self.width * -3)
         self.window.clear()
         self.window.switch_to()
-        self.window.dispatch_events()
         image.blit(0,0)
         self.window.flip()
     def close(self):

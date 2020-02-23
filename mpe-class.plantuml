@@ -1,0 +1,271 @@
+@startuml
+package core {
+        class EntityState {
+                + self.p_pos: float
+                + self.p_vel: float
+        }
+
+        class AgentState {
+                + self.c: float
+        }
+
+        class Action {
+                + self.u: float
+                + self.c: float
+        }
+
+        class Entity {
+                + self.name: string
+                + self.size: float
+                + self.movable: boolean
+                + self.collide: boolean
+                + self.density: float
+                + self.color: tuple
+                + self.max_speed: float
+                + self.accel: float
+                + self.state: EntityState
+                + self.initial_mess: float
+
+                + mess()
+        }
+
+        class Landmark {
+        }
+
+        class Agent {
+                + self.silent: boolean
+                + self.blind: boolean
+                + self.u_noise: float
+                + self.c_noise: float
+                + self.u_range: float
+                + self.state: AgentState
+                + self.action: Action
+                + self.action_callback
+        }
+
+        class World {
+                + self.agents: List[Agent]
+                + self.landmarks: List[Landmark]
+                + self.dim_c: int
+                + self.dim_p: int
+                + self.dim_color: int
+                + self.dt: float
+                + self.damping: float
+                + self.contact_force: float
+                + self.contact_margin: float
+                ----
+                ..@property..
+                + self.entities()
+                + self.policy_agents()
+                + self.scripted_agents()
+                ..other method..
+                + self.step()
+                + self.apply_action_force()
+                + self.apply_environment_force()
+                + self.integrate_state()
+                + self.update_agent_state()
+                + self.get_collision_force()
+        }
+
+        EntityState <|- AgentState
+        Entity <|- Landmark
+        Entity <|- Agent
+        AgentState *-- Agent
+        EntityState *-- Entity
+        Action *-- Agent
+        Agent o-- World
+        Landmark o-- World
+}
+
+package environment {
+        class MultiAgentEnv {
+                + self.world: World
+                + self.agents: List[Agent]
+                + self.n: int
+                + self.discrete_action_space: boolean
+                + self.discrete_action_input: boolean
+                + self.force_discrete_action: boolean
+                + self.shared_reward: boolean
+                + self.action_space: List
+                + self.observation_space: List
+                + self.shared_viewer
+                ..callbacks..
+                + self.reset_callback
+                + self.reward_callback
+                + self.observation_callback
+                + self.info_callback
+                + self.done_callback
+                ----
+                + self.step()
+                + self.reset()
+                - self._get_info()
+                - self._get_obs()
+                - self._get_done()
+                - self._get_reward()
+                - self._set_action()
+                - self._reset_render()
+                - self.render()
+                - self._make_receptor_locations()
+        }
+
+        gym.Env <|- MultiAgentEnv
+        World o-- MultiAgentEnv
+}
+
+package policy {
+        class Policy {
+                + action()
+        }
+
+        class InteractivePolicy {
+                + self.env
+                + self.move
+                + self.comm
+                + self.action()
+                + self.key_press()
+                + self.key_release()
+        }
+
+        Policy <|- InteractivePolicy
+}
+
+package rendering {
+        class Viewer {
+                + self.width
+                + self.height
+                + self.window: pyglet.window.Window
+                + self.geoms: List
+                + self.onetime_geoms: List
+                + self.transform: Transform
+                + self.close()
+                + self.window_closed_by_user()
+                + self.set_bounds()
+                + self.add_geom()
+                + self.add_onetime()
+                + self.render()
+                + self.draw_circle()
+                + self.draw_polygon()
+                + self.draw_polyline()
+                + self.draw_line()
+                + self.get_array()
+        }
+
+        class Geom {
+                - self._color
+                + self.attrs: List[Attr]
+                + self.render()
+                + self.render1()
+                + self.add_attr()
+                + self.set_color()
+        }
+
+        class Attr {
+                + self.enable()
+                + self.disable()
+        }
+
+        class Transform {
+                + self.enable()
+                + self.disable()
+                + self.set_translation()
+                + self.set_rotation()
+                + self.set_scale()
+        }
+
+        class Color {
+                + self.vec4
+                + self.enable()
+        }
+
+        class LineStyle {
+                + self.style
+                + self.enable()
+                + self.disable()
+        }
+
+        class LineWidth {
+                + self.stroke
+                + self.enable()
+        }
+
+        class Point {
+                + self.render1()
+        }
+
+        class FilledPolygon {
+                + self.v
+                + self.render1()
+        }
+
+        class Compound {
+                + self.gs
+                + self.render1()
+        }
+
+        class PolyLine {
+                + self.v
+                + self.close
+                + self.linewidth
+                + self.render1()
+                + self.set_linewidth()
+        }
+
+        class Line {
+                + self.start
+                + self.end
+                + self.linewidth
+                + self.render1()
+        }
+
+        class Image {
+                + self.width
+                + self.height
+                + self.img
+                + self.flip
+                + self.render1()
+        }
+
+        class SimpleImageViewer {
+                + self.window
+                + self.isopen
+                + self.display
+                + self.imshow()
+                + self.close()
+        }
+
+        Attr *-- Geom
+        Attr <|- Transform
+        Attr <|- Color
+        Attr <|- LineStyle
+        Attr <|- LineWidth
+        Geom <|- Point
+        Geom <|- FilledPolygon
+        Geom <|- Compound
+        Geom <|- PolyLine
+        Geom <|- Line
+        Geom <|- Image
+        Geom o-- Viewer
+        Geom o-- SimpleImageViewer
+}
+
+package scenario {
+        class BaseScenario {
+                + self.make_world()
+                + self.reset_world()
+        }
+}
+
+package scenarios {
+        package simple {
+                class scenario {
+                        + self.make_world()
+                        + self.reset_world()
+                        + self.reward()
+                        + eslf.observation()
+                }
+        }
+
+        BaseScenario <|- simple.scenario
+}
+
+@enduml
